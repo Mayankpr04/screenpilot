@@ -257,7 +257,7 @@ void rebuild() {
             gtk_box_pack_start(GTK_BOX(box), row, FALSE, FALSE, 0);
             auto* binding = new Binding{&display, control, value};
             g_signal_connect_data(scale, "value-changed", G_CALLBACK(changed), binding,
-                                  destroyBinding, G_CONNECT_DEFAULT);
+                                  destroyBinding, static_cast<GConnectFlags>(0));
         }
         gtk_box_pack_start(GTK_BOX(listBox), frame, FALSE, FALSE, 8);
     }
