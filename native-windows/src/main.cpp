@@ -3,6 +3,7 @@
 #include <dwmapi.h>
 #include <highlevelmonitorconfigurationapi.h>
 #include <lowlevelmonitorconfigurationapi.h>
+#include <oleauto.h>
 #include <physicalmonitorenumerationapi.h>
 #include <shellapi.h>
 #include <shobjidl.h>
