@@ -3,6 +3,7 @@ name: Build native Windows installer
 on:
   workflow_dispatch:
   push:
+    branches: ["main"]
     tags: ["native-v*"]
 
 jobs:
@@ -20,4 +21,3 @@ jobs:
           name: ScreenPilot-Native-Windows-Installer
           path: installer-output/ScreenPilot-Setup.exe
           if-no-files-found: error
-
