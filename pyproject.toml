@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screenpilot"
+version = "0.1.2"
+description = "One control panel for brightness, contrast, and black level across Windows and Linux displays"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Mayank Pratap"}]
+dependencies = [
+  "PySide6>=6.7",
+  "monitorcontrol>=3.1.0; platform_system == 'Windows'",
+  "screen-brightness-control>=0.24.0; platform_system == 'Windows'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.5", "pyinstaller>=6.8", "pillow>=10.4"]
+
+[project.scripts]
+screenpilot = "screenpilot.app:main"
+screenpilot-cli = "screenpilot.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["screenpilot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
