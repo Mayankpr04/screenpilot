@@ -1,10 +1,11 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <dwmapi.h>
-#include <dxva2api.h>
 #include <highlevelmonitorconfigurationapi.h>
+#include <lowlevelmonitorconfigurationapi.h>
 #include <physicalmonitorenumerationapi.h>
 #include <shellapi.h>
+#include <shobjidl.h>
 #include <wbemidl.h>
 #include <wrl/client.h>
 
