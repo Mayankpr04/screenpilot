@@ -5,6 +5,8 @@
 #include <lowlevelmonitorconfigurationapi.h>
 #include <oleauto.h>
 #include <physicalmonitorenumerationapi.h>
+#include <powersetting.h>
+#include <powrprof.h>
 #include <shellapi.h>
 #include <shobjidl.h>
 #include <wbemidl.h>
@@ -128,6 +130,25 @@ private:
     ComPtr<IWbemServices> services_;
 };
 
+bool WritePowerPlanBrightness(DWORD value) {
+    GUID* scheme = nullptr;
+    if (PowerGetActiveScheme(nullptr, &scheme) != ERROR_SUCCESS || !scheme) return false;
+
+    SYSTEM_POWER_STATUS powerStatus{};
+    const bool onBattery =
+        GetSystemPowerStatus(&powerStatus) && powerStatus.ACLineStatus == 0;
+    const DWORD result = onBattery
+        ? PowerWriteDCValueIndex(nullptr, scheme, &GUID_VIDEO_SUBGROUP,
+                                 &GUID_DEVICE_POWER_POLICY_VIDEO_BRIGHTNESS, value)
+        : PowerWriteACValueIndex(nullptr, scheme, &GUID_VIDEO_SUBGROUP,
+                                 &GUID_DEVICE_POWER_POLICY_VIDEO_BRIGHTNESS, value);
+
+    const DWORD applyResult =
+        result == ERROR_SUCCESS ? PowerSetActiveScheme(nullptr, scheme) : result;
+    LocalFree(scheme);
+    return result == ERROR_SUCCESS && applyResult == ERROR_SUCCESS;
+}
+
 class WmiBacklightBackend final : public Backend {
 public:
     WmiBacklightBackend(std::shared_ptr<WmiConnection> connection, std::wstring instance,
@@ -182,7 +203,12 @@ public:
         hr = connection_->Services()->ExecMethod(
             const_cast<BSTR>(methodPath_.c_str()), const_cast<BSTR>(L"WmiSetBrightness"),
             0, nullptr, input.Get(), nullptr, nullptr);
-        return SUCCEEDED(hr);
+        if (SUCCEEDED(hr)) return true;
+
+        // Some laptop firmware exposes readable WMI brightness data but rejects
+        // WmiSetBrightness. Apply the same percentage through the active Windows
+        // power scheme as a dependency-free native fallback.
+        return WritePowerPlanBrightness(value);
     }
 
 private:

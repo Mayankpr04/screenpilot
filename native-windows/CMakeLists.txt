@@ -13,6 +13,7 @@ target_link_libraries(ScreenPilot PRIVATE
     WbemUuid
     Ole32
     OleAut32
+    PowrProf
     Comctl32
     Shell32
     Dwmapi
