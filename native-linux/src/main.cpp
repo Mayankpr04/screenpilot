@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <unistd.h>
 
 namespace fs = std::filesystem;
 
@@ -27,6 +28,7 @@ public:
     virtual ~Backend() = default;
     virtual std::optional<RangeValue> read(Control control) = 0;
     virtual bool write(Control control, int value) = 0;
+    virtual std::string errorMessage() const { return "The display rejected this setting."; }
 };
 
 std::optional<std::string> run(const std::vector<std::string>& args) {
@@ -74,6 +76,14 @@ public:
                     std::to_string(std::clamp(value, 0, 100)) + "%"}).has_value();
     }
 
+    std::string errorMessage() const override {
+        const fs::path brightness = path_ / "brightness";
+        if (access(brightness.c_str(), W_OK) != 0)
+            return "ScreenPilot does not have permission to change the laptop backlight. "
+                   "Sign out and back in (or restart) after installation, then try again.";
+        return "The laptop firmware rejected this brightness setting.";
+    }
+
 private:
     static std::optional<long> readNumber(const fs::path& path) {
         std::ifstream stream(path);
@@ -104,6 +114,15 @@ public:
     bool write(Control control, int value) override {
         return run({"ddcutil", "--bus", std::to_string(bus_), "setvcp", code(control),
                     std::to_string(value)}).has_value();
+    }
+
+    std::string errorMessage() const override {
+        const fs::path device = "/dev/i2c-" + std::to_string(bus_);
+        if (access(device.c_str(), R_OK | W_OK) != 0)
+            return "ScreenPilot cannot access this monitor's I2C device. "
+                   "Sign out and back in (or restart) after installation, then try again.";
+        return "The monitor rejected this DDC/CI setting. Check that DDC/CI is enabled "
+               "in the monitor's on-screen menu.";
     }
 
 private:
@@ -190,7 +209,8 @@ gboolean applyValue(gpointer data) {
     binding->timer = 0;
     if (!binding->display->backend->write(binding->control, binding->value)) {
         GtkWidget* dialog = gtk_message_dialog_new(nullptr, GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING, GTK_BUTTONS_CLOSE, "The display rejected this setting.");
+            GTK_MESSAGE_WARNING, GTK_BUTTONS_CLOSE, "%s",
+            binding->display->backend->errorMessage().c_str());
         gtk_dialog_run(GTK_DIALOG(dialog));
         gtk_widget_destroy(dialog);
     }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ScreenPilotLinux VERSION 0.3.0 LANGUAGES CXX)
+project(ScreenPilotLinux VERSION 0.3.1 LANGUAGES CXX)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)

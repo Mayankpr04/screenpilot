@@ -19,6 +19,10 @@ jobs:
         run: |
           chmod +x scripts/build-linux-deb.sh
           ./scripts/build-linux-deb.sh
+      - name: Verify Debian package metadata and maintainer script
+        run: |
+          test "$(dpkg-deb -f installer-output/screenpilot_0.3.1_amd64.deb Version)" = "0.3.1"
+          dpkg-deb --ctrl-tarfile installer-output/screenpilot_0.3.1_amd64.deb | tar -xOf - ./postinst | sh -n
       - uses: actions/upload-artifact@v7
         with:
           name: ScreenPilot-Ubuntu-Debian-Package
