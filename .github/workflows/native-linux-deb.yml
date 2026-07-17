@@ -1,0 +1,26 @@
+name: Build Linux Debian package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+    tags: ["linux-v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake pkg-config libgtk-3-dev
+      - name: Build native application and Debian package
+        run: |
+          chmod +x scripts/build-linux-deb.sh
+          ./scripts/build-linux-deb.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ScreenPilot-Ubuntu-Debian-Package
+          path: installer-output/screenpilot_*.deb
+          if-no-files-found: error
