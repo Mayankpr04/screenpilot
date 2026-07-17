@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Inno Setup
         run: choco install innosetup --yes --no-progress
       - name: Build native application and installer
