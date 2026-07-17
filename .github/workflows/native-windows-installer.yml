@@ -15,7 +15,7 @@ jobs:
       - name: Build native application and installer
         shell: powershell
         run: .\scripts\build-native.ps1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ScreenPilot-Native-Windows-Installer
           path: installer-output/ScreenPilot-Setup.exe
