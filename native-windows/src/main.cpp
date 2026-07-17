@@ -444,7 +444,7 @@ private:
         displays_ = DiscoverDisplays();
         MakeText(L"ScreenPilot", 28, 24, 320, 42, 30, true);
         HWND refresh = CreateWindow(L"BUTTON", L"Refresh displays", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                    520, 26, 140, 34, window_, reinterpret_cast<HMENU>(kMenuRefresh),
+                                    520, 26, 140, 34, window_, reinterpret_cast<HMENU>(static_cast<INT_PTR>(kMenuRefresh)),
                                     instance_, nullptr);
         SendMessage(refresh, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
         int y = 86;
