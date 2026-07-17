@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=ScreenPilot
+Comment=Control brightness and contrast for every display
+Exec=screenpilot
+Icon=screenpilot
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;
+Keywords=monitor;display;brightness;contrast;DDC;
+
