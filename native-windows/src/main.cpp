@@ -236,7 +236,7 @@ std::vector<Display> DiscoverWmiBacklights() {
     ComPtr<IEnumWbemClassObject> enumerator;
     HRESULT hr = connection->Services()->ExecQuery(
         const_cast<BSTR>(L"WQL"),
-        const_cast<BSTR>(L"SELECT InstanceName, __PATH FROM WmiMonitorBrightnessMethods"),
+        const_cast<BSTR>(L"SELECT InstanceName, __RELPATH FROM WmiMonitorBrightnessMethods WHERE Active=TRUE"),
         WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &enumerator);
     if (FAILED(hr)) return displays;
 
@@ -248,7 +248,7 @@ std::vector<Display> DiscoverWmiBacklights() {
         VariantInit(&instance);
         VariantInit(&path);
         if (SUCCEEDED(item->Get(L"InstanceName", 0, &instance, nullptr, nullptr)) &&
-            SUCCEEDED(item->Get(L"__PATH", 0, &path, nullptr, nullptr)) &&
+            SUCCEEDED(item->Get(L"__RELPATH", 0, &path, nullptr, nullptr)) &&
             instance.vt == VT_BSTR && path.vt == VT_BSTR) {
             std::wstring instanceName(instance.bstrVal);
             std::wstring label = L"Built-in display";
