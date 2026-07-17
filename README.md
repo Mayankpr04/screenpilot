@@ -1,92 +1,124 @@
 # ScreenPilot
 
-Current version: **0.1.2**
+[![Latest release](https://img.shields.io/github/v/release/Mayankpr04/screenpilot?display_name=tag)](https://github.com/Mayankpr04/screenpilot/releases/latest)
+[![Windows build](https://github.com/Mayankpr04/screenpilot/actions/workflows/native-windows-installer.yml/badge.svg)](https://github.com/Mayankpr04/screenpilot/actions/workflows/native-windows-installer.yml)
+[![Linux build](https://github.com/Mayankpr04/screenpilot/actions/workflows/native-linux-deb.yml/badge.svg)](https://github.com/Mayankpr04/screenpilot/actions/workflows/native-linux-deb.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## Native Windows edition
+A lightweight native app for controlling the brightness and contrast of every supported display from one place.
 
-The native Windows 0.2.0 edition is in `native-windows`. It has no Python, Qt, .NET, or Electron runtime and builds to one small `ScreenPilot.exe`. Run `scripts\\build-native.ps1` on Windows or trigger the included **Build native Windows installer** GitHub workflow. The resulting end-user file is `ScreenPilot-Setup.exe`.
+ScreenPilot handles laptop panels and external monitors without Electron, .NET, Python, or another bundled runtime. Controls are shown only when the display reports that it supports them.
 
-ScreenPilot is one control panel for all displays attached to a Windows or Linux computer. It discovers each display and exposes brightness, contrast, and black level only when the display reports that the control is supported.
+## Download
 
-## How it works
+**[Download the latest ScreenPilot release](https://github.com/Mayankpr04/screenpilot/releases/latest)**
 
-- **External monitors:** DDC/CI over the display cable. Brightness uses VCP `0x10`, contrast `0x12`, and black level `0x11`.
-- **Laptop panels:** Windows WMI or Linux `/sys/class/backlight`. Laptop panels normally expose brightness only.
-- **Unsupported monitors:** Some monitors disable DDC/CI by default, some docks/adapters do not forward it, and many displays do not implement black level.
+| Platform | Installer | Notes |
+| --- | --- | --- |
+| Windows 10/11 (64-bit) | `ScreenPilot-Setup.exe` | Graphical installer; no terminal required |
+| Ubuntu/Debian (64-bit) | `screenpilot_0.3.1_amd64.deb` | Install by double-clicking or with APT |
 
-## Install on Windows
+### Windows
 
-1. In each external monitor's physical menu, enable **DDC/CI**.
-2. Install Python 3.10 or newer.
-3. From PowerShell in this folder:
+1. Download `ScreenPilot-Setup.exe` from the latest release.
+2. Run the installer.
+3. Open ScreenPilot from the Start menu.
+
+You can right-click ScreenPilot in the Start menu or taskbar and select **Pin to taskbar**.
+
+### Ubuntu and Debian
+
+Download the `.deb` from the latest release and open it with your software installer, or run:
+
+```bash
+sudo apt install ./screenpilot_0.3.1_amd64.deb
+```
+
+After the first installation, sign out and back in—or restart—so your new display-device permissions take effect.
+
+## Supported controls
+
+| Display type | Brightness | Contrast | Black level |
+| --- | :---: | :---: | :---: |
+| Built-in laptop panel | Yes | Usually unavailable | Usually unavailable |
+| DDC/CI external monitor | Yes | If supported | If supported |
+
+- External monitors use DDC/CI VCP codes `0x10` (brightness), `0x12` (contrast), and `0x11` (black level).
+- Laptop panels use Windows display APIs or Linux `/sys/class/backlight`.
+- ScreenPilot clamps values to the range reported by each display and debounces slider updates to avoid flooding the DDC bus.
+
+## Before using an external monitor
+
+Open the monitor's physical on-screen menu and enable **DDC/CI**. The name varies by manufacturer and may appear under System, General, or Other Settings.
+
+Some docks, KVM switches, adapters, and capture devices do not forward DDC/CI commands even when video works normally.
+
+## Troubleshooting
+
+### A monitor is missing
+
+- Confirm that DDC/CI is enabled in the monitor menu.
+- Connect the monitor directly to the computer to rule out a dock, adapter, or KVM.
+- Select **Refresh displays** after changing the connection.
+- On Linux, sign out and back in after installing ScreenPilot.
+
+### A setting is rejected
+
+- Confirm that the specific control exists in the monitor's own menu.
+- Disable HDR temporarily; the OS or GPU may override some monitor controls.
+- Some monitors advertise a DDC/CI control but reject writes to it.
+- OLED displays may use manufacturer-specific controls instead of standard black level.
+
+### Linux permission message
+
+The Debian installer adds the invoking desktop user to the `i2c` and `video` groups without making device files world-accessible. If the package was installed from a root-only session, run:
+
+```bash
+sudo usermod -aG i2c,video "$USER"
+```
+
+Then sign out and back in, or restart.
+
+## Build from source
+
+### Native Windows installer
+
+Requirements:
+
+- Windows 10 or 11
+- Visual Studio with the Desktop development with C++ workload
+- CMake
+- Inno Setup 6
+
+From PowerShell:
 
 ```powershell
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install .
-screenpilot
+.\scripts\build-native.ps1
 ```
 
-To build a portable application folder:
+The installer is written to `installer-output\ScreenPilot-Setup.exe`.
 
-```powershell
-.\scripts\build.ps1
-```
+### Native Linux Debian package
 
-Install [Inno Setup 6](https://jrsoftware.org/isinfo.php), then run the build command. The finished graphical installer is created at `installer-output\ScreenPilot-Setup.exe`. End users only need this file and do not need Python or a terminal.
-
-Once installed, ScreenPilot appears in the Start menu and notification area. Closing its window keeps it in the tray; use the tray menu's **Exit** command to stop it. Right-click the Start menu entry or running taskbar icon and choose **Pin to taskbar**.
-
-## Install on Ubuntu/Debian Linux
-
-Enable DDC access and install the system helper:
+On Ubuntu/Debian:
 
 ```bash
-sudo apt install ddcutil i2c-tools python3-venv
-sudo modprobe i2c-dev
-sudo usermod -aG i2c "$USER"
+sudo apt install build-essential cmake pkg-config libgtk-3-dev
+chmod +x scripts/build-linux-deb.sh
+./scripts/build-linux-deb.sh
 ```
 
-Log out and back in after adding the group, then:
+The package is written to `installer-output/screenpilot_0.3.1_amd64.deb`.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install .
-screenpilot
-```
+Both installers can also be built from the repository's [GitHub Actions page](https://github.com/Mayankpr04/screenpilot/actions).
 
-If laptop brightness is permission-denied, install `brightnessctl`; most distributions configure its access automatically.
+## Limitations
 
-To build a standalone binary folder:
+- Hardware DDC/CI support depends on the monitor and the entire connection path.
+- HDR can change how brightness and contrast behave.
+- Many displays do not implement standard black-level control.
+- ScreenPilot changes hardware controls; it intentionally does not simulate dimming with a software gamma overlay.
 
-```bash
-chmod +x scripts/build.sh
-./scripts/build.sh
-```
+## License
 
-## CLI
-
-```bash
-screenpilot-cli --list
-screenpilot-cli --display ddc-6 --brightness 60 --contrast 70
-```
-
-## Development
-
-```bash
-pip install -e '.[dev]'
-pytest
-ruff check .
-```
-
-## Practical limitations
-
-- HDMI/DisplayPort/USB-C usually support DDC/CI, but capture cards, some KVMs, DisplayLink adapters, and inexpensive docks may block it.
-- HDR mode may cause the OS/GPU to override or reinterpret brightness and contrast.
-- OLED televisions and monitors often expose manufacturer-specific controls instead of standard black level VCP `0x11`.
-- Software gamma overlays can simulate dimming, but they do not change the panel backlight and are intentionally not used here.
-
-## Safety
-
-ScreenPilot probes only the three standard VCP controls above. It clamps every write to the range reported by the display and debounces GUI slider updates to avoid flooding the DDC bus.
+ScreenPilot is available under the [MIT License](LICENSE).
