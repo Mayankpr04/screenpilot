@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+if ! getent group i2c >/dev/null 2>&1; then
+    addgroup --system i2c >/dev/null
+fi
+
+install_user="${SUDO_USER:-}"
+if [ -n "$install_user" ] && [ "$install_user" != "root" ] && id "$install_user" >/dev/null 2>&1; then
+    usermod -aG i2c,video "$install_user"
+    printf '\nScreenPilot: enabled display access for %s.\n' "$install_user"
+    printf 'Sign out and back in, or restart the computer, before launching ScreenPilot.\n\n'
+else
+    printf '\nScreenPilot installed. To enable hardware display access, run:\n'
+    printf '  sudo usermod -aG i2c,video YOUR_USERNAME\n'
+    printf 'Then sign out and back in, or restart the computer.\n\n'
+fi
+
+exit 0
