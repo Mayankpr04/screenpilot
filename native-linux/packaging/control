@@ -1,0 +1,11 @@
+Package: screenpilot
+Version: 0.3.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libgtk-3-0, ddcutil, brightnessctl
+Maintainer: Mayank Pratap
+Description: Unified brightness and contrast controls for connected displays
+ ScreenPilot controls laptop backlights and DDC/CI external monitors from one
+ lightweight native GTK application.
+
